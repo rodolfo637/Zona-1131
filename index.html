@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Inspección 1131 - Registro Documental</title>
+    
+    <!-- PWA Configuration -->
+    <meta name="theme-color" content="#004582">
+    <meta name="description" content="Sistema de registro documental para Inspección 1131">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Insp. 1131">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23004582'/><text x='50' y='65' font-family='Arial' font-size='40' fill='white' text-anchor='middle'>C</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    
+    <style>
+        /* ===== VARIABLES Y RESET ===== */
+        :root {
+            --azul: #004582;
+            --celeste: #009ADA;
+            --magenta: #AF4178;
+            --rojo: #E2464C;
+            --naranja: #EB7F27;
+            --amarillo: #F7BE2B;
+            --verde: #32A430;
+            --blanco: #ffffff;
+            --gris-claro: #f5f5f5;
+            --gris-medio: #e0e0e0;
+            --gris-oscuro: #757575;
+            --shadow-sm: 0 2px 5px rgba(0,0,0,0.1);
+            --shadow-md: 0 5px 15px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --transition: all 0.2s ease;
+        }
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body, html {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--gris-claro); 
+            color: #333; 
+            line-height: 1.6;
+            height: 100%;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+        
+        /* ===== PANTALLAS ===== */
+        .screen { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .screen.active { 
+            display: block; 
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, var(--azul), #003366);
+            color: white; 
+            padding: 15px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000;
+            box-shadow: var(--shadow-md);
+            height: 70px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo-container { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            width: 100%;
+        }
+        
+        .logo-img { 
+            width: 45px; 
+            height: 45px; 
+            background: linear-gradient(135deg, var(--celeste), var(--azul)); 
+            border-radius: 8px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-weight: bold; 
+            font-size: 18px; 
+            color: white; 
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+        
+        .institucional { 
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .institucional h1 { 
+            font-size: 16px; 
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .institucional h2 { 
+            font-size: 12px; 
+            opacity: 0.9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* ===== LOGIN ===== */
+        .login-container { 
+            padding: 20px; 
+            max-width: 400px; 
+            margin: 0 auto;
+            height: calc(100vh - 70px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .login-card {
+            background: white; 
+            border-radius: 15px; 
+            padding: 25px; 
+            margin-top: 20px;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .login-tabs { 
+            display: flex; 
+            margin-bottom: 20px; 
+            border-bottom: 2px solid var(--gris-claro); 
+        }
+        
+        .login-tab {
+            flex: 1; 
+            padding: 12px; 
+            text-align: center; 
+            font-weight: 600; 
+            color: var(--gris-oscuro);
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+            position: relative;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        
+        .login-tab.active { 
+            color: var(--azul); 
+        }
+        
+        .login-tab.active::after {
+            content: ''; 
+            position: absolute; 
+            bottom: -2px; 
+            left: 0; 
+            width: 100%; 
+            height: 3px;
+            background: var(--azul); 
+            border-radius: 3px 3px 0 0;
+        }
+        
+        /* ===== FORMULARIOS ===== */
+        .form-grid { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+        }
+        
+        input, select, textarea {
+            padding: 14px 12px; 
+            border: 2px solid var(--gris-medio); 
+            border-radius: 8px;
+            font-size: 16px; 
+            width: 100%; 
+            background: white;
+            transition: var(--transition);
+            min-height: 48px;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none; 
+            border-color: var(--celeste); 
+            box-shadow: 0 0 0 3px rgba(0,154,218,0.2);
+        }
+        
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        label {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--gris-oscuro);
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        /* ===== BOTONES ===== */
+        .btn {
+            padding: 14px 16px; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            font-size: 16px;
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px;
+            transition: var(--transition);
+            min-height: 48px; 
+            width: 100%; 
+            margin-top: 10px;
+            box-shadow: var(--shadow-sm);
+            touch-action: manipulation;
+        }
+        
+        .btn:active { 
+            transform: translateY(2px); 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary {
+            background: var(--azul);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #003366;
+        }
+        
+        .btn-success {
+            background: var(--verde);
+            color: white;
+        }
+        
+        .btn-success:hover:not(:disabled) {
+            background: #258828;
+        }
+        
+        .btn-danger {
+            background: var(--rojo);
+            color: white;
+        }
+        
+        .btn-danger:hover:not(:disabled) {
+            background: #c93d43;
+        }
+        
+        .btn-secondary {
+            background: var(--gris-medio);
+            color: #333;
+        }
+        
+        .btn-secondary:hover:not(:disabled) {
+            background: #d0d0d0;
+        }
+        
+        /* ===== CONTENEDOR PRINCIPAL ===== */
+        .main-container {
+            padding-bottom: 80px;
+        }
+        
+        /* ===== BARRA DE BÚSQUEDA ===== */
+        .search-bar {
+            padding: 15px;
+            background: white;
+            border-bottom: 1px solid var(--gris-medio);
+            position: sticky;
+            top: 70px;
+            z-index: 100;
+        }
+        
+        .search-input-container {
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 40px 12px 12px;
+            border: 2px solid var(--gris-medio);
+            border-radius: 25px;
+            font-size: 15px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gris-oscuro);
+        }
+        
+        /* ===== FILTROS ===== */
+        .filters-container {
+            background: white;
+            padding: 15px;
+            border-bottom: 1px solid var(--gris-medio);
+        }
+        
+        .filter-chips {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .filter-chips::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .filter-chip {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 2px solid var(--gris-medio);
+            background: white;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .filter-chip.active {
+            background: var(--azul);
+            color: white;
+            border-color: var(--azul);
+        }
+        
+        /* ===== LISTA DE REGISTROS ===== */
+        .registros-list {
+            padding: 15px;
+        }
+        
+        .registro-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            border-left: 4px solid var(--celeste);
+        }
+        
+        .registro-card:active {
+            transform: scale(0.98);
+        }
+        
+        .registro-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .registro-number {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--azul);
+        }
+        
+        .registro-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .registro-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 13px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            color: var(--gris-oscuro);
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* ===== NAVEGACIÓN INFERIOR ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            border-top: 1px solid var(--gris-medio);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            background: none;
+            color: var(--gris-oscuro);
+        }
+        
+        .nav-item.active {
+            color: var(--azul);
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        /* ===== FAB BUTTON ===== */
+        .fab {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--celeste);
+            color: white;
+            border: none;
+            font-size: 28px;
+            box-shadow: 0 4px 12px rgba(0,154,218,0.4);
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .fab:active {
+            transform: scale(0.9);
+        }
+        
+        /* ===== MODALES ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--gris-medio);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--azul);
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gris-oscuro);
+            padding: 0;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        /* ===== ESTADÍSTICAS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, var(--azul), #003366);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        /* ===== MENSAJES ===== */
+        .message {
+            display: none;
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 3000;
+            min-width: 250px;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translate(-50%, -20px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+        
+        .message-success {
+            background: var(--verde);
+            color: white;
+        }
+        
+        .message-error {
+            background: var(--rojo);
+            color: white;
+        }
+        
+        .message-warning {
+            background: var(--naranja);
+            color: white;
+        }
+        
+        /* ===== LOADING ===== */
+        .loading-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.95);
+            z-index: 4000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading-screen.active {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--gris-medio);
+            border-top-color: var(--azul);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            margin-top: 20px;
+            font-weight: 600;
+            color: var(--azul);
+        }
+        
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        
+        .empty-text {
+            font-size: 16px;
+            color: var(--gris-oscuro);
+            margin-bottom: 10px;
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (min-width: 768px) {
+            .login-container {
+                max-width: 500px;
+            }
+            
+            .registros-list {
+                max-width: 900px;
+                margin: 0 auto;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        /* ===== UTILIDADES ===== */
+        .hidden {
+            display: none !important;
+        }
+        
+        .mt-1 { margin-top: 8px; }
+        .mt-2 { margin-top: 16px; }
+        .mt-3 { margin-top: 24px; }
+        .mb-1 { margin-bottom: 8px; }
+        .mb-2 { margin-bottom: 16px; }
+        .mb-3 { margin-bottom: 24px; }
+        .text-center { text-align: center; }
+        .font-bold { font-weight: 700; }
+    </style>
+</head>
+<body>
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-screen" class="screen active">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-img">C</div>
+                <div class="institucional">
+                    <h1>Inspección 1131</h1>
+                    <h2>Registro Documental</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-tabs">
+                    <button class="login-tab active" id="tab-login">Ingresar</button>
+                    <button class="login-tab" id="tab-register">Registrarse</button>
+                </div>
+                
+                <!-- Formulario de Login -->
+                <form id="login-form" class="form-grid">
+                    <div>
+                        <label for="login-username">Usuario</label>
+                        <input type="text" id="login-username" placeholder="Ingrese su usuario" required autocomplete="username">
+                    </div>
+                    <div>
+                        <label for="login-password">Contraseña</label>
+                        <input type="password" id="login-password" placeholder="Ingrese su contraseña" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Ingresar</button>
+                </form>
+                
+                <!-- Formulario de Registro -->
+                <form id="register-form" class="form-grid hidden">
+                    <div>
+                        <label for="reg-username">Usuario</label>
+                        <input type="text" id="reg-username" placeholder="Elija un nombre de usuario" required autocomplete="off">
+                    </div>
+                    <div>
+                        <label for="reg-password">Contraseña</label>
+                        <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required autocomplete="new-password">
+                    </div>
+                    <div>
+                        <label for="reg-name">Nombre completo</label>
+                        <input type="text" id="reg-name" placeholder="Su nombre completo" required autocomplete="name">
+                    </div>
+                    <div>
+                        <label for="reg-email">Email</label>
+                        <input type="email" id="reg-email" placeholder="correo@ejemplo.com" required autocomplete="email">
+                    </div>
+                    <button type="submit" class="btn btn-success">Crear cuenta</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA PRINCIPAL -->
+    <div id="main-screen" class="screen">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-img">C</div>
+                <div class="institucional">
+                    <h1>Inspección 1131</h1>
+                    <h2 id="user-name-header">Usuario</h2>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Barra de búsqueda -->
+        <div class="search-bar">
+            <div class="search-input-container">
+                <input type="text" class="search-input" id="search-input" placeholder="Buscar por número, personal, área...">
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="filters-container">
+            <div class="filter-chips">
+                <button class="filter-chip active" data-filter="all">Todos</button>
+                <button class="filter-chip" data-filter="nota">Nota</button>
+                <button class="filter-chip" data-filter="informe">Informe</button>
+                <button class="filter-chip" data-filter="expediente">Expediente</button>
+                <button class="filter-chip" data-filter="acta">Acta</button>
+                <button class="filter-chip" data-filter="circular">Circular</button>
+                <button class="filter-chip" data-filter="cap">CAP</button>
+            </div>
+        </div>
+        
+        <div class="main-container">
+            <div class="registros-list" id="registros-list">
+                <!-- Los registros se cargarán dinámicamente -->
+            </div>
+        </div>
+        
+        <!-- FAB -->
+        <button class="fab" id="fab-add">+</button>
+        
+        <!-- Navegación inferior -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" id="nav-home">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Inicio</div>
+            </button>
+            <button class="nav-item" id="nav-stats">
+                <div class="nav-icon">📊</div>
+                <div class="nav-label">Estadísticas</div>
+            </button>
+            <button class="nav-item" id="nav-export">
+                <div class="nav-icon">📥</div>
+                <div class="nav-label">Exportar</div>
+            </button>
+            <button class="nav-item" id="nav-profile">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">Perfil</div>
+            </button>
+        </nav>
+    </div>
+
+    <!-- MODAL DE NUEVO REGISTRO -->
+    <div id="new-registro-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nuevo Registro</h3>
+                <button class="modal-close" onclick="closeNewRegistroModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="new-registro-form" class="form-grid">
+                    <div>
+                        <label for="new-docType">Tipo de documento *</label>
+                        <select id="new-docType" required>
+                            <option value="">Seleccione...</option>
+                            <option value="nota">Nota</option>
+                            <option value="informe">Informe</option>
+                            <option value="expediente">Expediente</option>
+                            <option value="acta">Acta</option>
+                            <option value="circular">Circular</option>
+                            <option value="cap">CAP</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="new-deliveryPerson">Personal *</label>
+                        <input type="text" id="new-deliveryPerson" placeholder="Nombre del personal" required>
+                    </div>
+                    <div>
+                        <label for="new-originArea">Área de origen</label>
+                        <input type="text" id="new-originArea" placeholder="Ej: Dirección General">
+                    </div>
+                    <div>
+                        <label for="new-userId">ID Usuario/Alumno</label>
+                        <input type="text" id="new-userId" placeholder="DNI, Legajo, etc.">
+                    </div>
+                    <div>
+                        <label for="new-observations">Observaciones</label>
+                        <textarea id="new-observations" placeholder="Detalles adicionales..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Guardar Registro</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeNewRegistroModal()">Cancelar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE DETALLES -->
+    <div id="detail-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Detalles del Registro</h3>
+                <button class="modal-close" onclick="closeDetailModal()">×</button>
+            </div>
+            <div class="modal-body" id="detail-content">
+                <!-- El contenido se cargará dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA DE PERFIL -->
+    <div id="profile-screen" class="screen">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-img">C</div>
+                <div class="institucional">
+                    <h1>Mi Perfil</h1>
+                    <h2 id="profile-username">Usuario</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-container">
+            <div style="padding: 20px; max-width: 600px; margin: 0 auto;">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-total">0</div>
+                        <div class="stat-label">Total registros</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-month">0</div>
+                        <div class="stat-label">Este mes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-week">0</div>
+                        <div class="stat-label">Esta semana</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-cap">0</div>
+                        <div class="stat-label">CAPs</div>
+                    </div>
+                </div>
+                
+                <div class="login-card mt-3">
+                    <h3 class="mb-2">Información de cuenta</h3>
+                    <div class="info-item mb-2">
+                        <div class="info-label">Nombre</div>
+                        <div class="info-value" id="profile-name">-</div>
+                    </div>
+                    <div class="info-item mb-2">
+                        <div class="info-label">Email</div>
+                        <div class="info-value" id="profile-email">-</div>
+                    </div>
+                    <div class="info-item mb-2">
+                        <div class="info-label">Rol</div>
+                        <div class="info-value" id="profile-role">-</div>
+                    </div>
+                    <button class="btn btn-danger" onclick="logout()">Cerrar Sesión</button>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="bottom-nav">
+            <button class="nav-item" onclick="showScreen('main')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Inicio</div>
+            </button>
+            <button class="nav-item" onclick="showStats()">
+                <div class="nav-icon">📊</div>
+                <div class="nav-label">Estadísticas</div>
+            </button>
+            <button class="nav-item" onclick="exportToCSV()">
+                <div class="nav-icon">📥</div>
+                <div class="nav-label">Exportar</div>
+            </button>
+            <button class="nav-item active">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">Perfil</div>
+            </button>
+        </nav>
+    </div>
+
+    <!-- MENSAJES -->
+    <div id="message-success" class="message message-success"></div>
+    <div id="message-error" class="message message-error"></div>
+    <div id="message-warning" class="message message-warning"></div>
+
+    <!-- LOADING -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loading-text">Cargando...</div>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // ========================================
+        // CONFIGURACIÓN Y DATOS
+        // ========================================
+        
+        const APP_VERSION = '4.0';
+        const STORAGE_KEYS = {
+            registros: 'registrosDocumentales_v4',
+            usuarios: 'usuariosDocumentales_v4',
+            currentUser: 'currentUser_v4'
+        };
+
+        // Datos de muestra
+        const sampleUsers = [
+            {
+                username: 'admin',
+                password: 'admin123',
+                name: 'Administrador',
+                email: 'admin@insp1131.edu.ar',
+                role: 'admin',
+                createdAt: new Date().toISOString()
+            },
+            {
+                username: 'supervisor',
+                password: 'super123',
+                name: 'Supervisor',
+                email: 'supervisor@insp1131.edu.ar',
+                role: 'supervisor',
+                createdAt: new Date().toISOString()
+            }
+        ];
+
+        const sampleData = [
+            {
+                id: '1',
+                regNumber: 'REG-001-2026',
+                date: '2026-02-12',
+                time: '10:30',
+                docType: 'nota',
+                deliveryPerson: 'María González',
+                originArea: 'Dirección General',
+                userId: '12345678',
+                observations: 'Nota urgente',
+                registeringUser: 'admin',
+                createdAt: new Date().toISOString()
+            }
+        ];
+
+        // ========================================
+        // ESTADO DE LA APLICACIÓN
+        // ========================================
+        
+        let currentUser = null;
+        let usuarios = [];
+        let registros = [];
+        let currentFilter = 'all';
+        let searchTerm = '';
+
+        // ========================================
+        // INICIALIZACIÓN
+        // ========================================
+        
+        function init() {
+            console.log(`📱 Sistema de Registro Documental v${APP_VERSION}`);
+            
+            loadData();
+            setupEventListeners();
+            checkAuth();
+            
+            // Detectar si es PWA o navegador estándar
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                                window.navigator.standalone ||
+                                document.referrer.includes('android-app://');
+            
+            console.log(isStandalone ? '📱 Modo App' : '🌐 Modo Web');
+        }
+
+        function loadData() {
+            // Cargar usuarios
+            const storedUsers = localStorage.getItem(STORAGE_KEYS.usuarios);
+            usuarios = storedUsers ? JSON.parse(storedUsers) : sampleUsers;
+            
+            // Cargar registros
+            const storedRegistros = localStorage.getItem(STORAGE_KEYS.registros);
+            registros = storedRegistros ? JSON.parse(storedRegistros) : sampleData;
+            
+            // Guardar datos si es primera vez
+            if (!storedUsers) saveUsers();
+            if (!storedRegistros) saveRegistros();
+        }
+
+        function saveUsers() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.usuarios, JSON.stringify(usuarios));
+            } catch (e) {
+                showMessage('Error al guardar usuarios', 'error');
+                console.error(e);
+            }
+        }
+
+        function saveRegistros() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.registros, JSON.stringify(registros));
+            } catch (e) {
+                showMessage('Error al guardar registros', 'error');
+                console.error(e);
+            }
+        }
+
+        function checkAuth() {
+            const stored = localStorage.getItem(STORAGE_KEYS.currentUser);
+            if (stored) {
+                currentUser = JSON.parse(stored);
+                showScreen('main');
+                updateUI();
+            } else {
+                showScreen('login');
+            }
+        }
+
+        // ========================================
+        // EVENT LISTENERS
+        // ========================================
+        
+        function setupEventListeners() {
+            // Tabs de login
+            document.getElementById('tab-login').addEventListener('click', () => {
+                document.getElementById('tab-login').classList.add('active');
+                document.getElementById('tab-register').classList.remove('active');
+                document.getElementById('login-form').classList.remove('hidden');
+                document.getElementById('register-form').classList.add('hidden');
+            });
+
+            document.getElementById('tab-register').addEventListener('click', () => {
+                document.getElementById('tab-register').classList.add('active');
+                document.getElementById('tab-login').classList.remove('active');
+                document.getElementById('register-form').classList.remove('hidden');
+                document.getElementById('login-form').classList.add('hidden');
+            });
+
+            // Formulario de login
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            
+            // Formulario de registro
+            document.getElementById('register-form').addEventListener('submit', handleRegister);
+            
+            // Formulario de nuevo registro
+            document.getElementById('new-registro-form').addEventListener('submit', handleNewRegistro);
+            
+            // FAB
+            document.getElementById('fab-add').addEventListener('click', openNewRegistroModal);
+            
+            // Navegación inferior
+            document.getElementById('nav-home').addEventListener('click', () => showScreen('main'));
+            document.getElementById('nav-stats').addEventListener('click', showStats);
+            document.getElementById('nav-export').addEventListener('click', exportToCSV);
+            document.getElementById('nav-profile').addEventListener('click', () => showScreen('profile'));
+            
+            // Búsqueda
+            document.getElementById('search-input').addEventListener('input', handleSearch);
+            
+            // Filtros
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.addEventListener('click', handleFilter);
+            });
+            
+            // Botón atrás en Android
+            if (typeof document.addEventListener !== 'undefined') {
+                document.addEventListener('backbutton', handleBackButton, false);
+            }
+        }
+
+        // ========================================
+        // AUTENTICACIÓN
+        // ========================================
+        
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            if (!username || !password) {
+                showMessage('Complete todos los campos', 'warning');
+                return;
+            }
+            
+            const user = usuarios.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                localStorage.setItem(STORAGE_KEYS.currentUser, JSON.stringify(user));
+                showMessage(`Bienvenido, ${user.name}!`, 'success');
+                showScreen('main');
+                updateUI();
+                
+                // Limpiar formulario
+                document.getElementById('login-form').reset();
+            } else {
+                showMessage('Usuario o contraseña incorrectos', 'error');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            
+            // Validaciones
+            if (!username || !password || !name || !email) {
+                showMessage('Complete todos los campos', 'warning');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showMessage('La contraseña debe tener al menos 6 caracteres', 'warning');
+                return;
+            }
+            
+            if (usuarios.find(u => u.username === username)) {
+                showMessage('El nombre de usuario ya existe', 'warning');
+                return;
+            }
+            
+            // Crear nuevo usuario
+            const newUser = {
+                username,
+                password,
+                name,
+                email,
+                role: 'user',
+                createdAt: new Date().toISOString()
+            };
+            
+            usuarios.push(newUser);
+            saveUsers();
+            
+            showMessage('Cuenta creada exitosamente', 'success');
+            
+            // Cambiar a tab de login
+            document.getElementById('tab-login').click();
+            document.getElementById('register-form').reset();
+        }
+
+        function logout() {
+            if (confirm('¿Cerrar sesión?')) {
+                currentUser = null;
+                localStorage.removeItem(STORAGE_KEYS.currentUser);
+                showScreen('login');
+                showMessage('Sesión cerrada', 'success');
+            }
+        }
+
+        // ========================================
+        // GESTIÓN DE REGISTROS
+        // ========================================
+        
+        function handleNewRegistro(e) {
+            e.preventDefault();
+            
+            const docType = document.getElementById('new-docType').value;
+            const deliveryPerson = document.getElementById('new-deliveryPerson').value.trim();
+            const originArea = document.getElementById('new-originArea').value.trim();
+            const userId = document.getElementById('new-userId').value.trim();
+            const observations = document.getElementById('new-observations').value.trim();
+            
+            if (!docType || !deliveryPerson) {
+                showMessage('Complete los campos obligatorios', 'warning');
+                return;
+            }
+            
+            // Generar número de registro
+            const regNumber = generateRegNumber(docType);
+            
+            // Crear registro
+            const newRegistro = {
+                id: Date.now().toString(),
+                regNumber,
+                date: new Date().toISOString().split('T')[0],
+                time: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
+                docType,
+                deliveryPerson,
+                originArea: originArea || '',
+                userId: userId || '',
+                observations: observations || '',
+                registeringUser: currentUser.username,
+                createdAt: new Date().toISOString()
+            };
+            
+            registros.unshift(newRegistro);
+            saveRegistros();
+            
+            showMessage(`Registro ${regNumber} creado exitosamente`, 'success');
+            closeNewRegistroModal();
+            renderRegistros();
+            updateProfileStats();
+            
+            // Limpiar formulario
+            document.getElementById('new-registro-form').reset();
+        }
+
+        function generateRegNumber(docType) {
+            const prefix = getDocTypeShort(docType);
+            const year = new Date().getFullYear();
+            const count = registros.filter(r => r.regNumber.startsWith(`${prefix}-`)).length + 1;
+            return `${prefix}-${String(count).padStart(3, '0')}-${year}`;
+        }
+
+        function renderRegistros() {
+            const container = document.getElementById('registros-list');
+            
+            // Filtrar registros
+            let filtered = registros.filter(r => {
+                if (currentUser.role !== 'admin') {
+                    if (r.registeringUser !== currentUser.username) return false;
+                }
+                if (currentFilter !== 'all' && r.docType !== currentFilter) return false;
+                if (searchTerm) {
+                    const term = searchTerm.toLowerCase();
+                    return r.regNumber.toLowerCase().includes(term) ||
+                           r.deliveryPerson.toLowerCase().includes(term) ||
+                           (r.originArea && r.originArea.toLowerCase().includes(term)) ||
+                           (r.userId && r.userId.toLowerCase().includes(term));
+                }
+                return true;
+            });
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <div class="empty-text">No hay registros para mostrar</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filtered.map(r => `
+                <div class="registro-card" onclick="showDetail('${r.id}')">
+                    <div class="registro-header">
+                        <div class="registro-number">${r.regNumber}</div>
+                        <div class="registro-badge" style="background: ${getDocTypeColor(r.docType)}">
+                            ${getDocTypeName(r.docType)}
+                        </div>
+                    </div>
+                    <div class="registro-info">
+                        <div class="info-item">
+                            <div class="info-label">Fecha</div>
+                            <div class="info-value">${formatDate(r.date)}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Hora</div>
+                            <div class="info-value">${r.time}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Personal</div>
+                            <div class="info-value">${r.deliveryPerson}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Área</div>
+                            <div class="info-value">${r.originArea || 'No especificada'}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showDetail(id) {
+            const registro = registros.find(r => r.id === id);
+            if (!registro) return;
+            
+            document.getElementById('detail-content').innerHTML = `
+                <div class="mb-2">
+                    <h4>${registro.regNumber}</h4>
+                    <div class="registro-badge mt-1" style="background: ${getDocTypeColor(registro.docType)}; display: inline-block;">
+                        ${getDocTypeName(registro.docType)}
+                    </div>
+                </div>
+                
+                <div class="info-item mb-2">
+                    <div class="info-label">Fecha y hora</div>
+                    <div class="info-value">${formatDate(registro.date)} ${registro.time}</div>
+                </div>
+                
+                <div class="info-item mb-2">
+                    <div class="info-label">Personal</div>
+                    <div class="info-value">${registro.deliveryPerson}</div>
+                </div>
+                
+                <div class="info-item mb-2">
+                    <div class="info-label">Área de origen</div>
+                    <div class="info-value">${registro.originArea || 'No especificada'}</div>
+                </div>
+                
+                <div class="info-item mb-2">
+                    <div class="info-label">ID Usuario/Alumno</div>
+                    <div class="info-value">${registro.userId || 'No especificado'}</div>
+                </div>
+                
+                <div class="info-item mb-2">
+                    <div class="info-label">Observaciones</div>
+                    <div class="info-value">${registro.observations || 'Sin observaciones'}</div>
+                </div>
+                
+                <div class="info-item mb-2">
+                    <div class="info-label">Registrado por</div>
+                    <div class="info-value">${registro.registeringUser}</div>
+                </div>
+                
+                <div class="info-item mb-3">
+                    <div class="info-label">Fecha de creación</div>
+                    <div class="info-value">${formatDateTime(registro.createdAt)}</div>
+                </div>
+                
+                ${currentUser.role === 'admin' || registro.registeringUser === currentUser.username ? `
+                    <button class="btn btn-danger" onclick="deleteRegistro('${registro.id}')">
+                        Eliminar Registro
+                    </button>
+                ` : ''}
+            `;
+            
+            document.getElementById('detail-modal').classList.add('active');
+        }
+
+        function deleteRegistro(id) {
+            if (!confirm('¿Eliminar este registro?')) return;
+            
+            registros = registros.filter(r => r.id !== id);
+            saveRegistros();
+            closeDetailModal();
+            renderRegistros();
+            updateProfileStats();
+            showMessage('Registro eliminado', 'success');
+        }
+
+        // ========================================
+        // BÚSQUEDA Y FILTROS
+        // ========================================
+        
+        function handleSearch(e) {
+            searchTerm = e.target.value.trim();
+            renderRegistros();
+        }
+
+        function handleFilter(e) {
+            const filter = e.target.dataset.filter;
+            currentFilter = filter;
+            
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            e.target.classList.add('active');
+            
+            renderRegistros();
+        }
+
+        // ========================================
+        // ESTADÍSTICAS Y EXPORTACIÓN
+        // ========================================
+        
+        function updateProfileStats() {
+            if (!currentUser) return;
+            
+            const userRegistros = registros.filter(r => r.registeringUser === currentUser.username);
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            
+            const registrosEsteMes = userRegistros.filter(r => {
+                const date = new Date(r.date);
+                return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+            });
+            
+            const registrosEstaSemana = userRegistros.filter(r => {
+                const registroDate = new Date(r.date);
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                return registroDate >= weekAgo;
+            });
+            
+            const registrosCAP = userRegistros.filter(r => r.docType === 'cap').length;
+            
+            document.getElementById('stat-total').textContent = userRegistros.length;
+            document.getElementById('stat-month').textContent = registrosEsteMes.length;
+            document.getElementById('stat-week').textContent = registrosEstaSemana.length;
+            document.getElementById('stat-cap').textContent = registrosCAP;
+        }
+
+        function showStats() {
+            let message = '';
+            
+            if (currentUser.role === 'admin') {
+                const totalRegistros = registros.length;
+                const porTipo = {};
+                registros.forEach(r => {
+                    porTipo[r.docType] = (porTipo[r.docType] || 0) + 1;
+                });
+                
+                message = `Total de registros: ${totalRegistros}\n\n`;
+                message += 'Por tipo:\n';
+                Object.entries(porTipo).forEach(([tipo, count]) => {
+                    message += `- ${getDocTypeName(tipo)}: ${count}\n`;
+                });
+            } else {
+                const userRegistros = registros.filter(r => r.registeringUser === currentUser.username);
+                message = `Tus registros: ${userRegistros.length}`;
+            }
+            
+            alert(message);
+        }
+
+        function exportToCSV() {
+            showLoading('Exportando...');
+            
+            setTimeout(() => {
+                let registrosMostrar = registros;
+                if (currentUser.role !== 'admin') {
+                    registrosMostrar = registros.filter(r => r.registeringUser === currentUser.username);
+                }
+                
+                if (registrosMostrar.length === 0) {
+                    showMessage('No hay registros para exportar', 'warning');
+                    hideLoading();
+                    return;
+                }
+                
+                // Crear contenido CSV
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+                
+                // Encabezados
+                const headers = ["N° Registro", "Fecha", "Hora", "Tipo", "Personal", "Área", "ID Usuario", "Observaciones", "Usuario", "Fecha Creación"];
+                csvContent += headers.join(";") + "\n";
+                
+                // Datos
+                registrosMostrar.forEach(registro => {
+                    const row = [
+                        `"${registro.regNumber}"`,
+                        `"${registro.date}"`,
+                        `"${registro.time}"`,
+                        `"${getDocTypeName(registro.docType)}"`,
+                        `"${registro.deliveryPerson}"`,
+                        `"${registro.originArea || ''}"`,
+                        `"${registro.userId || ''}"`,
+                        `"${(registro.observations || '').replace(/"/g, '""')}"`,
+                        `"${registro.registeringUser}"`,
+                        `"${registro.createdAt}"`
+                    ];
+                    csvContent += row.join(";") + "\n";
+                });
+                
+                // Crear enlace de descarga
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `registros_${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showMessage('CSV exportado exitosamente', 'success');
+                hideLoading();
+            }, 500);
+        }
+
+        // ========================================
+        // UTILIDADES
+        // ========================================
+        
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(`${screenName}-screen`).classList.add('active');
+            
+            if (screenName === 'main') {
+                renderRegistros();
+                updateActiveNav('nav-home');
+            } else if (screenName === 'profile') {
+                updateProfileInfo();
+                updateProfileStats();
+                updateActiveNav('nav-profile');
+            }
+        }
+
+        function updateActiveNav(activeId) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.getElementById(activeId).classList.add('active');
+        }
+
+        function updateUI() {
+            if (!currentUser) return;
+            
+            document.getElementById('user-name-header').textContent = currentUser.name;
+            renderRegistros();
+        }
+
+        function updateProfileInfo() {
+            if (!currentUser) return;
+            
+            document.getElementById('profile-username').textContent = currentUser.username;
+            document.getElementById('profile-name').textContent = currentUser.name;
+            document.getElementById('profile-email').textContent = currentUser.email;
+            document.getElementById('profile-role').textContent = getRoleName(currentUser.role);
+        }
+
+        function openNewRegistroModal() {
+            document.getElementById('new-registro-modal').classList.add('active');
+        }
+
+        function closeNewRegistroModal() {
+            document.getElementById('new-registro-modal').classList.remove('active');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detail-modal').classList.remove('active');
+        }
+
+        function showLoading(text = 'Cargando...') {
+            document.getElementById('loading-text').textContent = text;
+            document.getElementById('loading-screen').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-screen').classList.remove('active');
+        }
+
+        function showMessage(text, type = 'success') {
+            const msg = document.getElementById(`message-${type}`);
+            msg.textContent = text;
+            msg.style.display = 'block';
+            setTimeout(() => {
+                msg.style.display = 'none';
+            }, 3000);
+        }
+
+        // Funciones auxiliares
+        function getDocTypeName(type) {
+            const names = {
+                'nota': 'Nota',
+                'informe': 'Informe',
+                'expediente': 'Expediente',
+                'acta': 'Acta',
+                'circular': 'Circular',
+                'cap': 'CAP',
+                'otro': 'Otro'
+            };
+            return names[type] || type;
+        }
+
+        function getDocTypeShort(type) {
+            const names = {
+                'nota': 'NTA',
+                'informe': 'INF',
+                'expediente': 'EXP',
+                'acta': 'ACT',
+                'circular': 'CIR',
+                'cap': 'CAP',
+                'otro': 'OTR'
+            };
+            return names[type] || type;
+        }
+
+        function getDocTypeColor(type) {
+            const colors = {
+                'nota': '#009ADA',
+                'informe': '#AF4178',
+                'expediente': '#E2464C',
+                'acta': '#EB7F27',
+                'circular': '#F7BE2B',
+                'cap': '#32A430',
+                'otro': '#757575'
+            };
+            return colors[type] || '#757575';
+        }
+
+        function getRoleName(role) {
+            const names = {
+                'admin': 'Administrador',
+                'supervisor': 'Supervisor',
+                'user': 'Usuario'
+            };
+            return names[role] || role;
+        }
+
+        function formatDate(dateStr) {
+            const [year, month, day] = dateStr.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        function formatDateTime(dateTimeStr) {
+            try {
+                const date = new Date(dateTimeStr);
+                return date.toLocaleDateString('es-AR') + ' ' + date.toLocaleTimeString('es-AR', {hour: '2-digit', minute:'2-digit'});
+            } catch (e) {
+                return dateTimeStr;
+            }
+        }
+
+        function handleBackButton(e) {
+            if (document.getElementById('detail-modal').classList.contains('active')) {
+                closeDetailModal();
+                e.preventDefault();
+            } else if (document.getElementById('new-registro-modal').classList.contains('active')) {
+                closeNewRegistroModal();
+                e.preventDefault();
+            } else if (document.getElementById('profile-screen').classList.contains('active')) {
+                showScreen('main');
+                e.preventDefault();
+            } else if (document.getElementById('main-screen').classList.contains('active')) {
+                if (confirm('¿Desea salir de la aplicación?')) {
+                    if (typeof navigator.app !== 'undefined') {
+                        navigator.app.exitApp();
+                    }
+                } else {
+                    e.preventDefault();
+                }
+            }
+        }
+
+        // Exponer funciones globalmente
+        window.closeNewRegistroModal = closeNewRegistroModal;
+        window.closeDetailModal = closeDetailModal;
+        window.showDetail = showDetail;
+        window.deleteRegistro = deleteRegistro;
+        window.logout = logout;
+        window.showScreen = showScreen;
+        window.showStats = showStats;
+        window.exportToCSV = exportToCSV;
+
+        // ========================================
+        // INICIAR APLICACIÓN
+        // ========================================
+        
+        // Esperar a que el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+        // Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(() => console.log('✅ Service Worker registrado'))
+                    .catch(err => console.log('❌ SW Error:', err));
+            });
+        }
+
+    })();
+    </script>
+</body>
+</html>
